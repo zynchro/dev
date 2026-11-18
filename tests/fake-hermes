@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+root=${HERMES_HOME:?}
+profile=default
+if [ "${1:-}" = "-p" ]; then profile=$2; shift 2; fi
+dir="$root/fake/$profile"
+[ "$profile" = default ] || [ -d "$root/profiles/$profile" ] || { echo "no profile $profile" >&2; exit 1; }
+mkdir -p "$dir"
+echo "$profile $*" >>"$root/fake/calls.log"
+
+case "$1 ${2:-}" in
+  "config set")
+    printf '%s' "$4" >"$dir/$3" ;;
+  "config unset")
+    rm -f "$dir/$3" ;;
+  "config get")
+    [ -n "${FAKE_HERMES_FAIL_GET:-}" ] && { echo "boom" >&2; exit 1; }
+    if [ -f "$dir/$3" ]; then cat "$dir/$3"; elif [ "${4:-}" = "--json" ]; then echo '[]'; fi ;;
+  "config path")
+    if [ "$profile" = default ]; then echo "$root/config.yaml"; else echo "$root/profiles/$profile/config.yaml"; fi ;;
+  "profile create")
+    name=$3
+    [ "${4:-}" = "--clone-from" ] && [ "${5:-}" = "default" ] || { echo "fake hermes: expected --clone-from default" >&2; exit 2; }
+    mkdir -p "$root/profiles/$name" "$root/fake/$name"
+    echo "pool: $name" >"$root/profiles/$name/config.yaml" ;;
+  *)
+    echo "fake hermes: unsupported: $*" >&2; exit 2 ;;
+esac

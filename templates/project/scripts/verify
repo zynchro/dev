@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+
+ran=0
+step() {
+  printf '\n▶ %s\n' "$*"
+  "$@"
+  ran=$((ran + 1))
+}
+
+if [ -f package.json ]; then
+  if [ -f pnpm-lock.yaml ]; then pm=pnpm; elif [ -f yarn.lock ]; then pm=yarn; elif [ -f bun.lock ] || [ -f bun.lockb ]; then pm=bun; else pm=npm; fi
+  for script in typecheck lint test; do
+    if jq -e --arg s "$script" '.scripts[$s] // empty' package.json >/dev/null; then
+      step "$pm" run "$script"
+    fi
+  done
+fi
+
+if [ -f pyproject.toml ]; then
+  if [ -f uv.lock ]; then
+    step uv run ruff check .
+    step uv run pytest -q
+  else
+    step ruff check .
+    step pytest -q
+  fi
+fi
+
+if [ -f go.mod ]; then
+  step go vet ./...
+  step go test ./...
+fi
+
+if [ "$ran" -eq 0 ]; then
+  echo "verify: no checks found; add the repo's checks to scripts/verify" >&2
+  exit 1
+fi
+printf '\n✔ verify passed (%d checks)\n' "$ran"

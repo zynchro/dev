@@ -1,0 +1,22 @@
+name: check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: brew install shellcheck
+      - run: shellcheck install.sh hooks/claude/stop-verify.sh templates/project/scripts/verify tests/*.sh tests/fake-hermes
+      - name: Run tests with macOS's own bash 3.2
+        run: |
+          mkdir -p "$RUNNER_TEMP/bash32"
+          ln -s /bin/bash "$RUNNER_TEMP/bash32/bash"
+          echo "$RUNNER_TEMP/bash32" >> "$GITHUB_PATH"
+      - run: bash --version | head -1 | grep -q 'version 3\.2'
+      - run: tests/install.test.sh
+      - run: tests/stop-verify.test.sh
+      - run: tests/verify-template.test.sh

@@ -1,0 +1,10 @@
+pre-commit:
+  parallel: true
+  commands:
+    secrets:
+      run: gitleaks git --pre-commit --staged --redact --no-banner
+
+pre-push:
+  commands:
+    verify:
+      run: scripts/verify
