@@ -5,12 +5,14 @@ One set of engineering rules, testing skills and quality gates, installed into e
 ## Install
 
 ```bash
-git clone https://github.com/zynchro/dev ~/Desktop/zynchro/dev
-cd ~/Desktop/zynchro/dev
+git clone https://github.com/zynchro/dev ~/dev
+cd ~/dev
 ./install.sh --dry-run
 ./install.sh
 ./install.sh --check
 ```
+
+Keep the clone outside `~/Desktop`, `~/Documents` and `~/Downloads`. macOS guards those folders, and the Hermes gateway runs in the background, so it hangs when it reads skills from there (`install.sh` flags this).
 
 On the work laptop, create only the work memory pool. The choice is remembered, so later plain runs and checks keep it:
 
@@ -50,7 +52,7 @@ Work memory (`noon`) lives only on the work laptop. This repo is public: it hold
 ## Set up a repo
 
 ```bash
-cp -Rn ~/Desktop/zynchro/dev/templates/project/. path/to/repo/
+cp -Rn ~/dev/templates/project/. path/to/repo/
 cd path/to/repo
 git config zynchro.verify true
 ```

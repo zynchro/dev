@@ -268,6 +268,10 @@ generated "${CODEX_HOME:-$HOME/.codex}/AGENTS.md"
 
 if command -v hermes >/dev/null; then
   echo "Hermes (pools: ${pools:-none})"
+  case "$REPO/" in
+    "$HOME/Desktop/"*|"$HOME/Documents/"*|"$HOME/Downloads/"*)
+      problem "this repo is in a macOS-protected folder; the Hermes gateway runs in the background and hangs reading skills from it. Move the repo to ~/dev, then run ./install.sh --uninstall in the old place and ./install.sh in the new one" ;;
+  esac
   hermes_config ""
   hermes_pools
 fi

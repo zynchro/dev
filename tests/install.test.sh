@@ -148,4 +148,15 @@ install --no-pools || fail "install with symlinked settings.json failed"
 [ "$(stop_hooks)" = 1 ] || fail "hook not added through the symlink"
 pass "a symlinked settings.json stays a symlink"
 
+fresh_home protected
+mkdir -p "$HOME/Desktop"
+cp -R "$REPO" "$HOME/Desktop/zdev"
+set +e
+"$HOME/Desktop/zdev/install.sh" --no-pools >"$SANDBOX/out.log" 2>&1
+code=$?
+set -e
+[ "$code" = 1 ] || fail "install from ~/Desktop with Hermes present should report a problem, got $code"
+grep -q "macOS-protected folder" "$SANDBOX/out.log" || fail "no warning about the protected folder"
+pass "a repo inside ~/Desktop is flagged when Hermes is installed"
+
 echo "all $passed install checks passed"
